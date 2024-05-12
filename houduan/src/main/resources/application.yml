@@ -1,9 +1,15 @@
 server:
   port: 81
 spring:
+  cache:
+    redis:
+      cache-null-values: true
+      time-to-live: 30000
+
   redis:
-    host: localhost
-    port: 6374
+   database: 0
+   host: localhost
+   port: 6379
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver

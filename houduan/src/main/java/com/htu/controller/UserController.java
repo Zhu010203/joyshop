@@ -3,17 +3,13 @@ package com.htu.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.htu.common.BaseContext;
 import com.htu.common.R;
-import com.htu.entity.Basket;
 import com.htu.entity.User;
-import com.htu.service.BasketService;
 import com.htu.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -27,7 +23,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
 
     @GetMapping("/login")
     public R login(HttpServletRequest request,String username, String password){
@@ -36,16 +32,19 @@ public class UserController {
         List<User> list = userService.list();
         for (User user:list) {
             if (Objects.equals(user.getUsername(), username) && Objects.equals(user.getPassword(), pass)){
-
+                redisTemplate.opsForValue().set("token",user.getId());
                 return R.success(user);
             }
         }
         return R.error("登陆失败");
     }
+
     @GetMapping("/logout")
     public R<String> logout(HttpServletRequest request){
         //清理Session中保存的当前登录员工的id
         request.getSession().removeAttribute("userid");
+        //清理redis中token
+        redisTemplate.delete("token");
         return R.success("退出成功");
     }
     //查询分页

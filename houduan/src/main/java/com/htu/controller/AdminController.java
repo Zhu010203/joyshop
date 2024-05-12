@@ -9,6 +9,7 @@ import com.htu.entity.Admin;
 import com.htu.service.AdminService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,8 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     @GetMapping("/login")
     public R login(HttpServletRequest request,String username, String password){
@@ -33,6 +36,7 @@ public class AdminController {
         for (Admin admin:list) {
             if (Objects.equals(admin.getUsername(), username) && Objects.equals(admin.getPassword(), pass)){
                 request.getSession().setAttribute("userid",admin.getId());
+                redisTemplate.opsForValue().set("token",admin.getId());
                 return R.success(admin);
             }
         }
@@ -42,6 +46,8 @@ public class AdminController {
     public R<String> logout(HttpServletRequest request){
         //清理Session中保存的当前登录员工的id
         request.getSession().removeAttribute("userid");
+        //清理redis中token
+        redisTemplate.delete("token");
         return R.success("退出成功");
     }
     //查询分页

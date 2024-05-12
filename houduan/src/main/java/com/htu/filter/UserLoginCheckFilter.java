@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 
 import com.htu.common.BaseContext;
 import com.htu.common.R;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.AntPathMatcher;
 
 import javax.servlet.*;
@@ -12,8 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter(filterName = "LoginCheckFilter",urlPatterns = "/abcd/*")
+@WebFilter(filterName = "LoginCheckFilter",urlPatterns = "/*")
 public class UserLoginCheckFilter implements Filter {
+
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     @Override
@@ -35,7 +40,7 @@ public class UserLoginCheckFilter implements Filter {
             filterChain.doFilter(servletRequest,servletResponse);
             return;
         }
-        Object userid=request.getSession().getAttribute("token");
+        Object userid= redisTemplate.opsForValue().get("token");
         System.out.println(userid);
         if(userid!=null){
             BaseContext.setCurrentId((Long) userid);

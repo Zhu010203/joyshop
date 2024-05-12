@@ -7,9 +7,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 @Data
-public class User {
+public class User implements Serializable {
     @JsonSerialize(using = ToStringSerializer.class)//把指定的类型转化String类型返给前端
     private Long id;//用户id
 

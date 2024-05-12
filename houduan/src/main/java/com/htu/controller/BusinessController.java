@@ -7,6 +7,7 @@ import com.htu.common.R;
 import com.htu.entity.Business;
 import com.htu.service.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,8 @@ public class BusinessController {
     @Autowired
     private BusinessService businessService;
 
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     @GetMapping("/login")
     public R login(HttpServletRequest request, String username, String password){
@@ -29,6 +32,7 @@ public class BusinessController {
         List<Business> list = businessService.list();
         for (Business business:list) {
             if (Objects.equals(business.getUsername(), username) && Objects.equals(business.getPassword(), pass)) {
+                redisTemplate.opsForValue().set("token",business.getId());
                 return R.success(business);
             }
         }
@@ -38,6 +42,8 @@ public class BusinessController {
     public R<String> logout(HttpServletRequest request){
         //清理Session中保存的当前登录员工的id
         request.getSession().removeAttribute("userid");
+        //清理redis中token
+        redisTemplate.delete("token");
         return R.success("退出成功");
     }
     //查询分页
