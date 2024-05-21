@@ -21,6 +21,7 @@ export default defineConfig({
         changeOrigin: true,                 //设置允许跨域
         rewrite: (path) => path.replace(/^\/api/, '')
       },
+      //图片访问
       '/photo': {
         target: 'http://localhost:81/',
       }
